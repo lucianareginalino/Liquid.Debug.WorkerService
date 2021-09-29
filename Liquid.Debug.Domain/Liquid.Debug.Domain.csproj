@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net5.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Liquid.Messaging.ServiceBus" Version="2.0.0-preview-20210827-03" />
+    <PackageReference Include="Liquid.Repository.Mongo" Version="2.0.0" />
+  </ItemGroup>
+
+</Project>
