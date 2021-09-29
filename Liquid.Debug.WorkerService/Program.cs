@@ -38,8 +38,7 @@ namespace Liquid.Debug.WorkerService
 
                     services.AddScoped<ILiquidConsumer<SampleMessage>, ServiceBusConsumer<SampleMessage>>();
 
-                    services.TryAddEnumerable(ServiceDescriptor.Scoped<IHostedService, Worker>());
-                    //services.AddHostedService<Worker>();
+                    services.AddHostedService<Worker>();
                 });
     }
 }
