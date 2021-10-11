@@ -5,10 +5,8 @@ using Liquid.Debug.Domain.Entities;
 using Liquid.Debug.Domain.Handlers;
 using Liquid.Messaging;
 using Liquid.Messaging.ServiceBus;
-using Liquid.Messaging.ServiceBus.Extensions.DependencyInjection;
 using MediatR;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 
 namespace Liquid.Debug.WorkerService
@@ -36,9 +34,10 @@ namespace Liquid.Debug.WorkerService
                     services.AddTransient<ILiquidPipeline, LiquidPipeline>();
                     services.AddTransient<IServiceBusFactory, ServiceBusFactory>();
 
-                    services.AddScoped<ILiquidConsumer<SampleMessage>, ServiceBusConsumer<SampleMessage>>();
+                    services.AddSingleton<ILiquidConsumer<SampleMessage>, ServiceBusConsumer<SampleMessage>>();
+                    services.AddScoped<IWorker<SampleMessage>, Worker>();
 
-                    services.AddHostedService<Worker>();
+                    services.AddHostedService<ConsumerBase<SampleMessage>>();
                 });
     }
 }

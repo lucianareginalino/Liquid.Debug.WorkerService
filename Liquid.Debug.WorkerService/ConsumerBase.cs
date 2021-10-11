@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace Liquid.Debug.WorkerService
 {
-    public abstract class ConsumerBase <TEntity>: BackgroundService
+    public class ConsumerBase<TEntity> : BackgroundService
     {
         private ILiquidConsumer<TEntity> _consumer;
 
@@ -23,9 +23,10 @@ namespace Liquid.Debug.WorkerService
         // Parameters:
         //   consumer:
         //     Consumer service with message handler definition for processing messages.
-        protected ConsumerBase(IServiceProvider serviceProvider)
+        public ConsumerBase(IServiceProvider serviceProvider, ILiquidConsumer<TEntity> consumer)
         {
             _serviceProvider = serviceProvider;
+            _consumer = consumer;
         }
 
         //
@@ -39,18 +40,13 @@ namespace Liquid.Debug.WorkerService
         //     Triggered when Microsoft.Extensions.Hosting.IHostedService.StopAsync(System.Threading.CancellationToken)
         //     is called.
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
-        {          
+        {
+            _consumer.ProcessMessageAsync += ProcessMessageAsync;
+            _consumer.RegisterMessageHandler();
 
-            using (IServiceScope scope = _serviceProvider.CreateScope())
+            while (!stoppingToken.IsCancellationRequested)
             {
-                _consumer = scope.ServiceProvider.GetRequiredService<ILiquidConsumer<TEntity>>();
-
-                _consumer.ProcessMessageAsync += ProcessMessageAsync;
-                _consumer.RegisterMessageHandler();
-                while (!stoppingToken.IsCancellationRequested)
-                {
-                    await Task.Delay(1000, stoppingToken);
-                }
+                await Task.Delay(1000, stoppingToken);
             }
         }
 
@@ -64,6 +60,14 @@ namespace Liquid.Debug.WorkerService
         //   args:
         //
         //   cancellationToken:
-        public abstract Task ProcessMessageAsync(ProcessMessageEventArgs<TEntity> args, CancellationToken cancellationToken);
+        public Task ProcessMessageAsync(ProcessMessageEventArgs<TEntity> args, CancellationToken cancellationToken)
+        {
+            using (IServiceScope scope = _serviceProvider.CreateScope())
+            {
+                var worker = scope.ServiceProvider.GetRequiredService<IWorker<TEntity>>();
+
+               return worker.ProcessMessageAsync(args, cancellationToken);
+            }
+        }
     }
 }

@@ -8,17 +8,16 @@ using System.Threading.Tasks;
 
 namespace Liquid.Debug.WorkerService
 {
-    public class Worker : ConsumerBase<SampleMessage>
+    public class Worker : IWorker<SampleMessage>
     {
         private readonly IMediator _mediator;
 
-        public Worker(IServiceProvider serviceProvider, IMediator mediator) : base(serviceProvider)
+        public Worker(IMediator mediator) 
         {
             _mediator = mediator;
         }
 
-
-        public override async Task ProcessMessageAsync(ProcessMessageEventArgs<SampleMessage> args, CancellationToken cancellationToken)
+        public async Task ProcessMessageAsync(ProcessMessageEventArgs<SampleMessage> args, CancellationToken cancellationToken)
         {
             await _mediator.Send(new CreateCommandRequest(args.Data));
         }
